@@ -8,26 +8,26 @@
 
 ## 文書に関するメタな情報
 
-当リポジトリ内のドキュメントは、 (未来の) @kory33 に向けた作業手順やリファレンスとして機能することを想定しています。ドキュメントを読み書きする作業者に対して何らかの行為を推奨及び指示する際には、この文がそうしているように、語り掛ける文体で記述してください。
+当リポジトリ内のドキュメントは、 (未来の) [@kory33](https://github.com/kory33) に向けた作業手順やリファレンスとして機能することを想定しています。ドキュメントを読み書きする作業者に対して何らかの行為を推奨及び指示する際には、この文がそうしているように、語り掛ける文体で記述してください。
 
 この文書は公開されることを想定して記述してください。したがって、公開することによってサービスのホストが容易に著しく妨害される可能性のある情報は、いかなる形であっても当文書から参照できる形で残さないようにしてください。
 
 図などをドキュメントに含める際には、 [app.diagrams.net](https://app.diagrams.net/) で読み込むことができる svg ファイルを利用してください。それらの編集作業は、VSCode 上で [Draw.io VS Code Integration](https://github.com/hediet/vscode-drawio) を用いて行うことを推奨します。
 
-もしあなたが @kory33 以外の第三者で、当リポジトリのドキュメントの誤字脱字やフォーマット、あるいは当リポジトリが定義するインフラストラクチャの構成の改善に関してご意見がある場合、 [Issue](https://github.com/kory33/kory33.net-meta-infra/issues) 及び [Pull Request](https://github.com/kory33/kory33.net-meta-infra/pulls) を開いていただくか、Kory#4933 (Discord) または [@Kory\_\_3@twitter.com](https://twitter.com/Kory__3) へ連絡していただき、概要をお伝えくださると幸いです。
+もしあなたが [@kory33](https://github.com/kory33) 以外の第三者で、当リポジトリのドキュメントの誤字脱字やフォーマット、あるいは当リポジトリが定義するインフラストラクチャの構成の改善に関してご意見がある場合、 [Issue](https://github.com/kory33/kory33.net-meta-infra/issues) 及び [Pull Request](https://github.com/kory33/kory33.net-meta-infra/pulls) を開いていただくか、Kory#4933 (Discord) または [@Kory\_\_3@twitter.com](https://twitter.com/Kory__3) へ連絡していただき、概要をお伝えくださると幸いです。
 
 万が一セキュリティ上の脆弱性が発覚した場合、Kory#4933 (Discord) または [@Kory\_\_3@twitter.com](https://twitter.com/Kory__3) へ報告をお願いいたします。
 
 ### ドキュメント内の自由変数
 
-当リポジトリ内にドキュメントに現れる以下の概念は、「どのエンティティを指しているかが @kory33 の中では明らかである」特定のエンティティを表しています。
+当リポジトリ内にドキュメントに現れる以下の概念は、「どのエンティティを指しているかが [@kory33](https://github.com/kory33) の中では明らかである」特定のエンティティを表しています。
 
-- @kory33 の個人用の Google アカウント
-- @kory33 の Cloudflare アカウント
-- @kory33 の Terraform Cloud アカウント
-- @kory33 の Oracle Cloud Infrastructure アカウント
+- [@kory33](https://github.com/kory33) の個人用の Google アカウント
+- [@kory33](https://github.com/kory33) の Cloudflare アカウント
+- [@kory33](https://github.com/kory33) の Terraform Cloud アカウント
+- [@kory33](https://github.com/kory33) の Oracle Cloud Infrastructure アカウント
 
-もしあなたが @kory33 以外の第三者で、当リポジトリが定義するインフラストラクチャ構成を模倣してインフラストラクチャ群をセットアップしたい場合は、適切な代替となるエンティティへと読み替えてください。
+もしあなたが [@kory33](https://github.com/kory33) 以外の第三者で、当リポジトリが定義するインフラストラクチャ構成を模倣してインフラストラクチャ群をセットアップしたい場合は、適切な代替となるエンティティへと読み替えてください。
 
 ## 当リポジトリが管理を担当するインフラストラクチャ
 
@@ -35,9 +35,21 @@ kory33.net には様々なサービスがホストされることが想定され
 
 当リポジトリは、手作業と Terraform Cloud による基盤インフラストラクチャの管理を目的としています。サービスレイヤインフラストラクチャには [Docker](https://www.docker.com/) + [Kubernetes](https://kubernetes.io/) + [ArgoCD](https://argoproj.github.io/cd/) の技術スタックを想定していますが、当レポジトリではこれらにほとんど関与せず、 [kory33.net-infra](https://github.com/kory33/kory33.net-infra) に管理を一任します。
 
-以下に、当リポジトリで管理を行うインフラストラクチャの全体図を示します。
+当リポジトリで管理を行うインフラストラクチャの全体図を図示します。当リポジトリのセットアップ手順を完了し、 Terraform Cloud 上で Terraform スクリプトが (適切なシークレットとともに) 実行され終わったとき、次のようなインフラストラクチャが得られていることが期待されます。
 
-(TODO: 図を挿入する。当リポジトリでは手作業によるセットアップと Terraform Cloud による基盤インフラストラクチャの管理のみを担当し、その上に乗るソフトウェアに関しては、 `sshd` とそれに刺さりに行くように設定された `cloudflared` に関して以外一切関与しないことを説明する。また、 s3 等のバックアップストレージとの OIDC による接続などもこちら側で管理することを説明する。(TODO: どうやってコンテナの identity を証明すればよい？ Oracle Cloud Infrastructure は compute instance に identity を与える IdP を持っているか？)):
+![overview](docs/diagrams/overview.drawio.svg)
+
+上記の図に関する注意点は以下の通りです:
+
+- **keyless SSH について**
+  - `ssh--admin.kory33.net` に (正当に) アクセスする GitHub Actions は `kory33/kory33.net-infra` の `main` ブランチのものに限られるため、これ以外の Actions からのアクセスを拒否します。
+    - 期待する Action によるアクセスであることは、GitHub Actions の identity provider が提供する OpenID Connect の JWKS を検証することで確認できます (詳しくは [About security hardening with OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) を参照してください)。この一連の検証ルールは Terraform Cloud が管理することとなる access policy に組み込まれます。
+    - (検証 TODO): この machine access の SSH ユーザー名はいったいどうなる？cloud-init 側でユーザーを用意しておく必要がある？そもそも email アドレス無しに Cloudflare Tunnel を通して SSH アクセスが可能なのか？
+- **`establish tunnel` のステップと tunnel credential の扱いについて**
+  - OCI Compute Instance に送付する cloud-init スクリプトは、インスタンスがリブートされるたびに実行されるようにします。このスクリプトは、OCI Vault に入っている tunnel credential を取得し、 `ssh--admin.kory33.net` に作成されている Cloudflare Tunnel を (スクリプトが実行されている) インスタンスに向けます。
+  - これ以降、 `kory33.net` 配下のサービスの正当性は tunnel credential が漏洩していないことに依存することになります。よって、 tunnel credential の扱いには十分に注意する必要があります。
+    - OCI Vault 内の tunnel credential はこのインスタンス内からであれば読み取り可能であるので、インスタンス内にホストする Kubernetes クラスタでは、cluster 内すべての pod から `169.254.169.254` (metadata API) へのアクセスを**必ず**遮断するようにしてください (MUST)。
+    - インスタンス内でトンネルを張る場合は、当リポジトリの Terraform が OCI Vault に入れるものとは別の tunnel credential を使ってください (MUST)。特に、サービスレイヤインフラストラクチャをブートストラップするスクリプトでは、別の tunnel credential をクラスタに注入するようにしてください (MUST)。
 
 ## 各種セットアップ手順
 
