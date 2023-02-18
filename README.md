@@ -39,7 +39,7 @@ kory33.net には様々なサービスがホストされることが想定され
 
 ![overview](docs/diagrams/overview.drawio.svg)
 
-上記の図に関連する注意点は以下の通りです:
+次に続くのサブセクションでは、上記の図に関連する注意点を説明します。インフラストラクチャ運用する前に、必ず以下の注意点のすべての点を理解してください (**MUST**)。
 
 ### keyless SSH について
 
@@ -47,18 +47,39 @@ kory33.net には様々なサービスがホストされることが想定され
 
 期待する Action によるアクセスであることは、GitHub Actions の identity provider が提供する OpenID Connect の JWKS を検証することで確認できます (詳しくは [About security hardening with OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) を参照してください)。この一連の検証ルールは Terraform Cloud が管理することとなる access policy に組み込まれます。
 
-`ssh--admin.kory33.net` への認証は完全に Cloudflare Access にオフロードし、インスタンス側ではユーザーの正当性を検証しないことにします。つまり、インスタンス上では空パスワードによる認証を受け付け、インスタンスの SSHD に到達できていることをユーザーの正当性の根拠とします。また、 Cloudflare が提供する [short-lived certificate](https://developers.cloudflare.com/cloudflare-one/identity/users/short-lived-certificates) の機能は利用せず、`cloudflared access ssh --hostname ssh--admin.kory33.net` にてトンネルをローカルに張る瞬間に、 Cloudflare の認証基盤を利用してユーザーの正当性を検証します。
+`ssh--admin.kory33.net` への認証は完全に Cloudflare Access にオフロードし、インスタンス側ではユーザーの正当性を検証しないことにします。つまり、インスタンス上での `ubuntu` ユーザー (OCI Compute Instance 向け Ubuntu イメージでデフォルト生成される唯一の sudoer) のパスワードを削除し、 SSHD に空パスワードによる認証を受け付けさせ、**インスタンスの SSHD に到達できていることをユーザーの正当性の根拠とします**。
 
+#### セキュリティ
+
+Cloudflare が提供する [short-lived certificate](https://developers.cloudflare.com/cloudflare-one/identity/users/short-lived-certificates) の機能は利用せず、`cloudflared access ssh --hostname ssh--admin.kory33.net` にてトンネルをローカルに張る瞬間に、 Cloudflare の認証基盤を利用してユーザーの正当性を検証します。
 short-lived certificate を利用しないことによるセキュリティ上不利な点として、
 
 - インスタンス内のユーザーにどの Principal がアクセスできるかの詳細な制御ができない
 - インスタンス側のログで、どの Principal が実際にアクセスしてきているかの情報が取れない
 
-の二点が挙げられます。しかしながら、当インフラストラクチャでは Principal が二つ (マシンユーザーである GitHub Actions と 管理者である [@kory33](https://github.com/kory33)) しか存在しないうえ、どちらの Principal も `ubuntu` ユーザー (OCI Compute Instance 上で生成される唯一の sudoer user) へのアクセスが許されているため、この二点はユーザー側で認証情報を管理しなければならないことと天秤に掛ければ許容できるとの判断をしました。
+の二点が挙げられます。しかしながら、当インフラストラクチャでは Principal が二つ (マシンユーザーである GitHub Actions と 管理者である [@kory33](https://github.com/kory33)) しか存在しないうえ、どちらの Principal も `ubuntu` ユーザー (OCI Compute Instance 上で生成される唯一の sudoer user) へのアクセスが許されているため、この二点はユーザー側で認証情報を管理しなければならないことの運用負荷と天秤に掛ければ、許容できるとの判断をしました。
 
-Short-lived certificate を利用せずにこのような設計を取っている理由は、 2023/02/18 現在、`cloudflared` にマシンユーザーによる SSH ログインを行う時に Principal を指定できる機能 ([cloudflared#212](https://github.com/cloudflare/cloudflared/issues/212)) が実装されていないためです。もし、署名付きの JWT に渡される Principal に OIDC Claim から得られた認証情報を結びつける機能が Cloudflare 側で実装されれば、その機能を利用した認証方法に切り替えるべきです。
+#### なぜ Short-lived certificate を利用しないのか？
+
+Short-lived certificate を利用せずにこのような設計を取っている理由は、 2023/02/18 現在、`cloudflared` にマシンユーザーによる SSH ログインを行う時に Principal を指定できる機能 ([cloudflared#212](https://github.com/cloudflare/cloudflared/issues/212)) が実装されていないためです。この機能が無い限り、GitHub Actions ワークフローに、 GitHub Actions IdP が発行する OIDC Claim を根拠とする short-lived certificate を利用して SSH をさせる、ということが叶いません。
+
+もし、署名付きの JWT に渡される Principal に OIDC Claim から得られた認証情報を結びつける機能が Cloudflare 側で実装されれば、その機能を利用した認証方法に切り替えるべきです。
 
 一連の short-lived certificate による認証基盤は、原理的には Cloudflare Worker を利用して自前で再現できるものになっているはずですが、 JWT の発行、署名と CA 証明書管理を行うアプリケーションのソースコードが (2023/02/18 現在) 公開されていないため、自前構築を断念しています。一連の仕組みについての詳しい解説は [Public keys are not enough for SSH security - The Cloudflare Blog](https://blog.cloudflare.com/public-keys-are-not-enough-for-ssh-security/) を参照してください。
+
+#### 運用上の注意点
+
+上記で説明した設計により、`cloudflared` 以外の**一切の**プロセスからの `sshd` への接続を拒否する必要があります。
+
+これを実現するため、`cloudflared` を `cloudflared-proxy-user` と名付けた (non-sudoer) ユーザーの元で動作させ、`iptables` にて `cloudflared-proxy-user` 以外からの `lo:22` (SSHD が listen しているポート) へのアクセスを遮断するようにします。如何なる状況においてもこの制約を緩めないでください (**MUST NOT**)。
+
+また、Kubernetes クラスタ内のすべてのプログラムを完全に信頼することは困難なため、 Kubernetes クラスタは必ず
+
+- [rootless mode](https://kubernetes.io/docs/tasks/administer-cluster/kubelet-in-userns/) で
+- `cloudflared-proxy-user` 以外の non-sudoer ユーザーの権限で
+- 適切な container isolation を有効化して
+
+実行してください (**MUST**)。
 
 ### cloud-init の処理内容と `establish tunnel` のステップについて
 
@@ -72,15 +93,15 @@ OCI Compute Instance に送付する cloud-init スクリプトは、インス�
 
 cloud-init スクリプトが正常に動作し終えた時点で、[@kory33](https://github.com/kory33) と特定の GitHub Actions ワークフローが、インターネットを通して keyless SSH でインスタンスに接続できることを期待します。
 
-### `ssh--admin.kory33.net` の正当性の根拠
+### `ssh--admin.kory33.net` で繋がるマシンの正当性の根拠
 
 Terraform によって OCI Vault に共有される tunnel credential のことを、**SSH Tunnel Credential** と呼ぶことにします。
 
 `ssh--admin.kory33.net` が我々が作成したインスタンスであるという確証は、SSH Tunnel Credential が漏洩していないことに依存します。
 
-SSH Tunnel Credential は、正当なインスタンス内からであれば OCI Vault からいつでも読み取れるようになっています。一方、インスタンスには Kubernetes クラスタがホストされ、その上で様々なプログラムが動くことが想定されるため、Kubernetes クラスタ内のプログラムが SSH Tunnel Credential にアクセスできないように十分な注意を払う必要があります。
+SSH Tunnel Credential は、正当なインスタンス内からであれば OCI Vault からいつでも読み取れるようになっています。インスタンス内にホストされる Kubernetes クラスタ内のすべてのプログラムを完全に信頼することは困難なため、Kubernetes クラスタ内のプログラムが SSH Tunnel Credential にアクセスできないように十分な注意を払う必要があります。
 
-インスタンス内で OCI Vault から SSH Tunnel Credential を読み取るためには、 OCI Compute Instance の Metadata API (`169.254.169.254`) へアクセスして認証情報を取得することが必要となっています。よって、インスタンス内にホストする Kubernetes クラスタでは、クラスタ内すべての pod から `169.254.169.254` (metadata API) へのアクセスを必ず遮断するようにしてください (**MUST**)。クラスタ内にいかなる形でも SSH Tunnel Credential を露出しないでください (**MUST NOT**)。
+インスタンス内で OCI Vault から SSH Tunnel Credential を読み取るためには、 OCI Compute Instance の Metadata API (`169.254.169.254`) へアクセスして認証情報を取得することが必要となっています。 cloud-init が `ubuntu` ユーザーによって cloudflared を設定する場面以外で Metadata API へのアクセスが発生することは**無い**と仮定します。よって、 `ubuntu` 以外のユーザーから `169.254.169.254` (metadata API) へのアクセスを `iptables` を用いて必ず遮断するようにしてください (**MUST**)。クラスタ内にいかなる形でも SSH Tunnel Credential を露出しないでください (**MUST NOT**)。
 
 自動化された GitHub Actions が誤って悪意あるインスタンスに接続することを防ぐために、インスタンスの初期設定が終わってすぐに、一度手動でローカルマシンからインスタンスに接続し、サーバーの fingerprint を確かめた上で、それを GitHub Actions に定数として共有する、という手順を踏む必要があります (**MUST**)。詳しい手順については、セットアップ手順で説明します。
 
