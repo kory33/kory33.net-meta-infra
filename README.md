@@ -41,26 +41,36 @@ kory33.net には様々なサービスがホストされることが想定され
 
 上記の図に関連する注意点は以下の通りです:
 
-### cloud-init の処理内容と `establish tunnel` のステップについて
-
-OCI Compute Instance に送付する cloud-init スクリプトは、インスタンスがリブートされるたびに実行されるようにします。このスクリプトは、大まかに以下の事を行います。
-
-- [OCI CLI](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cliconcepts.htm) をインストールする
-- OCI Vault に入っている tunnel credential を OCI CLI により (instance principal を認証に使うことで) 取得する
-- SSHD が short-lived certificate を利用するように[設定](https://developers.cloudflare.com/cloudflare-one/identity/users/short-lived-certificates)し、サービスを再起動する
-  - ここで利用する CA 公開鍵は、Terraform により作成し、OCI Vault に格納します。この値は秘匿性が無いため、緩い権限設定でも構いません (MAY)。
-- [`cloudflared`](https://github.com/cloudflare/cloudflared) の特定バージョンを (まだダウンロードされていなければ) ダウンロードする
-- `ssh--admin.kory33.net` に作成されている Cloudflare Tunnel を (スクリプトが実行されている) インスタンスに向ける
-
-cloud-init スクリプトが正常に動作し終えた時点で、[@kory33](https://github.com/kory33) と特定の GitHub Actions ワークフローが、インターネットを通して keyless SSH でインスタンスに接続できることを期待します。
-
 ### keyless SSH について
 
 `ssh--admin.kory33.net` に (正当に) アクセスする GitHub Actions は `kory33/kory33.net-infra` の `main` ブランチのものに限られるため、これ以外の Actions からのアクセスを拒否します。
 
 期待する Action によるアクセスであることは、GitHub Actions の identity provider が提供する OpenID Connect の JWKS を検証することで確認できます (詳しくは [About security hardening with OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) を参照してください)。この一連の検証ルールは Terraform Cloud が管理することとなる access policy に組み込まれます。
 
-(検証 TODO): この machine access の SSH ユーザー名はいったいどうなる？cloud-init 側でユーザーを用意しておく必要がある？そもそも email アドレス無しに Cloudflare Tunnel を通して SSH アクセスが可能なのか？
+`ssh--admin.kory33.net` への認証は完全に Cloudflare Access にオフロードし、インスタンス側ではユーザーの正当性を検証しないことにします。つまり、インスタンス上では空パスワードによる認証を受け付け、インスタンスの SSHD に到達できていることをユーザーの正当性の根拠とします。また、 Cloudflare が提供する [short-lived certificate](https://developers.cloudflare.com/cloudflare-one/identity/users/short-lived-certificates) の機能は利用せず、`cloudflared access ssh --hostname ssh--admin.kory33.net` にてトンネルをローカルに張る瞬間に、 Cloudflare の認証基盤を利用してユーザーの正当性を検証します。
+
+short-lived certificate を利用しないことによるセキュリティ上不利な点として、
+
+- インスタンス内のユーザーにどの Principal がアクセスできるかの詳細な制御ができない
+- インスタンス側のログで、どの Principal が実際にアクセスしてきているかの情報が取れない
+
+の二点が挙げられます。しかしながら、当インフラストラクチャでは Principal が二つ (マシンユーザーである GitHub Actions と 管理者である [@kory33](https://github.com/kory33)) しか存在しないうえ、どちらの Principal も `ubuntu` ユーザー (OCI Compute Instance 上で生成される唯一の sudoer user) へのアクセスが許されているため、この二点はユーザー側で認証情報を管理しなければならないことと天秤に掛ければ許容できるとの判断をしました。
+
+Short-lived certificate を利用せずにこのような設計を取っている理由は、 2023/02/18 現在、`cloudflared` にマシンユーザーによる SSH ログインを行う時に Principal を指定できる機能 ([cloudflared#212](https://github.com/cloudflare/cloudflared/issues/212)) が実装されていないためです。もし JWT に署名付きで渡される Principal に OIDC Claim から得られた機能が Cloudflare 側で実装されれば、その機能を利用した認証方法に切り替えるべきです。
+
+一連の short-lived certificate による認証基盤は、原理的には Cloudflare Worker を利用して自前で再現できるものになっているはずですが、 JWT の発行、署名と CA 証明書管理を行うアプリケーションのソースコードが (2023/02/18 現在) 公開されていないため、自前構築を断念しています。一連の仕組みについての詳しい解説は [Public keys are not enough for SSH security - The Cloudflare Blog](https://blog.cloudflare.com/public-keys-are-not-enough-for-ssh-security/) を参照してください。
+
+### cloud-init の処理内容と `establish tunnel` のステップについて
+
+OCI Compute Instance に送付する cloud-init スクリプトは、インスタンスがリブートされるたびに実行されるようにします。このスクリプトは、大まかに以下の事を行います。
+
+- [OCI CLI](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cliconcepts.htm) をインストールする
+- OCI Vault に入っている tunnel credential を OCI CLI により (instance principal を認証に使うことで) 取得する
+- (前述の通り、認証を完全に Cloudflare にオフロードするために) SSHD の認証を切り、サービスを再起動する
+- [`cloudflared`](https://github.com/cloudflare/cloudflared) の特定バージョンを (まだダウンロードされていなければ) ダウンロードする
+- `ssh--admin.kory33.net` に作成されている Cloudflare Tunnel を (スクリプトが実行されている) インスタンスに向ける
+
+cloud-init スクリプトが正常に動作し終えた時点で、[@kory33](https://github.com/kory33) と特定の GitHub Actions ワークフローが、インターネットを通して keyless SSH でインスタンスに接続できることを期待します。
 
 ### `ssh--admin.kory33.net` の正当性の根拠
 
