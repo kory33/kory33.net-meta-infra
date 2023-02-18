@@ -56,7 +56,7 @@ short-lived certificate を利用しないことによるセキュリティ上�
 
 の二点が挙げられます。しかしながら、当インフラストラクチャでは Principal が二つ (マシンユーザーである GitHub Actions と 管理者である [@kory33](https://github.com/kory33)) しか存在しないうえ、どちらの Principal も `ubuntu` ユーザー (OCI Compute Instance 上で生成される唯一の sudoer user) へのアクセスが許されているため、この二点はユーザー側で認証情報を管理しなければならないことと天秤に掛ければ許容できるとの判断をしました。
 
-Short-lived certificate を利用せずにこのような設計を取っている理由は、 2023/02/18 現在、`cloudflared` にマシンユーザーによる SSH ログインを行う時に Principal を指定できる機能 ([cloudflared#212](https://github.com/cloudflare/cloudflared/issues/212)) が実装されていないためです。もし JWT に署名付きで渡される Principal に OIDC Claim から得られた機能が Cloudflare 側で実装されれば、その機能を利用した認証方法に切り替えるべきです。
+Short-lived certificate を利用せずにこのような設計を取っている理由は、 2023/02/18 現在、`cloudflared` にマシンユーザーによる SSH ログインを行う時に Principal を指定できる機能 ([cloudflared#212](https://github.com/cloudflare/cloudflared/issues/212)) が実装されていないためです。もし、署名付きの JWT に渡される Principal に OIDC Claim から得られた認証情報を結びつける機能が Cloudflare 側で実装されれば、その機能を利用した認証方法に切り替えるべきです。
 
 一連の short-lived certificate による認証基盤は、原理的には Cloudflare Worker を利用して自前で再現できるものになっているはずですが、 JWT の発行、署名と CA 証明書管理を行うアプリケーションのソースコードが (2023/02/18 現在) 公開されていないため、自前構築を断念しています。一連の仕組みについての詳しい解説は [Public keys are not enough for SSH security - The Cloudflare Blog](https://blog.cloudflare.com/public-keys-are-not-enough-for-ssh-security/) を参照してください。
 
