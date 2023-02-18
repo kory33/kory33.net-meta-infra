@@ -39,17 +39,40 @@ kory33.net には様々なサービスがホストされることが想定され
 
 ![overview](docs/diagrams/overview.drawio.svg)
 
-上記の図に関する注意点は以下の通りです:
+上記の図に関連する注意点は以下の通りです:
 
-- **keyless SSH について**
-  - `ssh--admin.kory33.net` に (正当に) アクセスする GitHub Actions は `kory33/kory33.net-infra` の `main` ブランチのものに限られるため、これ以外の Actions からのアクセスを拒否します。
-    - 期待する Action によるアクセスであることは、GitHub Actions の identity provider が提供する OpenID Connect の JWKS を検証することで確認できます (詳しくは [About security hardening with OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) を参照してください)。この一連の検証ルールは Terraform Cloud が管理することとなる access policy に組み込まれます。
-    - (検証 TODO): この machine access の SSH ユーザー名はいったいどうなる？cloud-init 側でユーザーを用意しておく必要がある？そもそも email アドレス無しに Cloudflare Tunnel を通して SSH アクセスが可能なのか？
-- **`establish tunnel` のステップと tunnel credential の扱いについて**
-  - OCI Compute Instance に送付する cloud-init スクリプトは、インスタンスがリブートされるたびに実行されるようにします。このスクリプトは、OCI Vault に入っている tunnel credential を取得し、 `ssh--admin.kory33.net` に作成されている Cloudflare Tunnel を (スクリプトが実行されている) インスタンスに向けます。
-  - これ以降、 `kory33.net` 配下のサービスの正当性は tunnel credential が漏洩していないことに依存することになります。よって、 tunnel credential の扱いには十分に注意する必要があります。
-    - OCI Vault 内の tunnel credential はこのインスタンス内からであれば読み取り可能であるので、インスタンス内にホストする Kubernetes クラスタでは、cluster 内すべての pod から `169.254.169.254` (metadata API) へのアクセスを**必ず**遮断するようにしてください (MUST)。
-    - インスタンス内でトンネルを張る場合は、当リポジトリの Terraform が OCI Vault に入れるものとは別の tunnel credential を使ってください (MUST)。特に、サービスレイヤインフラストラクチャをブートストラップするスクリプトでは、別の tunnel credential をクラスタに注入するようにしてください (MUST)。
+### cloud-init の処理内容と `establish tunnel` のステップについて
+
+OCI Compute Instance に送付する cloud-init スクリプトは、インスタンスがリブートされるたびに実行されるようにします。このスクリプトは、大まかに以下の事を行います。
+
+- [OCI CLI](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cliconcepts.htm) をインストールする
+- OCI Vault に入っている tunnel credential を OCI CLI により (instance principal を認証に使うことで) 取得する
+- SSHD が short-lived certificate を利用するように[設定](https://developers.cloudflare.com/cloudflare-one/identity/users/short-lived-certificates)し、サービスを再起動する
+  - ここで利用する CA 公開鍵は、Terraform により作成し、OCI Vault に格納します。この値は秘匿性が無いため、緩い権限設定でも構いません (MAY)。
+- [`cloudflared`](https://github.com/cloudflare/cloudflared) の特定バージョンを (まだダウンロードされていなければ) ダウンロードする
+- `ssh--admin.kory33.net` に作成されている Cloudflare Tunnel を (スクリプトが実行されている) インスタンスに向ける
+
+cloud-init スクリプトが正常に動作し終えた時点で、[@kory33](https://github.com/kory33) と特定の GitHub Actions ワークフローが、インターネットを通して keyless SSH でインスタンスに接続できることを期待します。
+
+### keyless SSH について
+
+`ssh--admin.kory33.net` に (正当に) アクセスする GitHub Actions は `kory33/kory33.net-infra` の `main` ブランチのものに限られるため、これ以外の Actions からのアクセスを拒否します。
+
+期待する Action によるアクセスであることは、GitHub Actions の identity provider が提供する OpenID Connect の JWKS を検証することで確認できます (詳しくは [About security hardening with OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) を参照してください)。この一連の検証ルールは Terraform Cloud が管理することとなる access policy に組み込まれます。
+
+(検証 TODO): この machine access の SSH ユーザー名はいったいどうなる？cloud-init 側でユーザーを用意しておく必要がある？そもそも email アドレス無しに Cloudflare Tunnel を通して SSH アクセスが可能なのか？
+
+### `ssh--admin.kory33.net` の正当性の根拠
+
+Terraform によって OCI Vault に共有される tunnel credential のことを、**SSH Tunnel Credential** と呼ぶことにします。
+
+`ssh--admin.kory33.net` が我々が作成したインスタンスであるという確証は、SSH Tunnel Credential が漏洩していないことに依存します。
+
+SSH Tunnel Credential は、正当なインスタンス内からであれば OCI Vault からいつでも読み取れるようになっています。一方、インスタンスには Kubernetes クラスタがホストされ、その上で様々なプログラムが動くことが想定されるため、Kubernetes クラスタ内のプログラムが SSH Tunnel Credential にアクセスできないように十分な注意を払う必要があります。
+
+インスタンス内で OCI Vault から SSH Tunnel Credential を読み取るためには、 OCI Compute Instance の Metadata API (`169.254.169.254`) へアクセスして認証情報を取得することが必要となっています。よって、インスタンス内にホストする Kubernetes クラスタでは、クラスタ内すべての pod から `169.254.169.254` (metadata API) へのアクセスを必ず遮断するようにしてください (**MUST**)。クラスタ内にいかなる形でも SSH Tunnel Credential を露出しないでください (**MUST NOT**)。
+
+自動化された GitHub Actions が誤って悪意あるインスタンスに接続することを防ぐために、インスタンスの初期設定が終わってすぐに、一度手動でローカルマシンからインスタンスに接続し、サーバーの fingerprint を確かめた上で、それを GitHub Actions に定数として共有する、という手順を踏む必要があります (**MUST**)。詳しい手順については、セットアップ手順で説明します。
 
 ## 各種セットアップ手順
 
