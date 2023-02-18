@@ -2,9 +2,22 @@
 
 [kory33.net-infra](https://github.com/kory33/kory33.net-infra) で管理されているインフラストラクチャをブートストラップ及びリカバリするための手順やスクリプト、並びに、それらインフラストラクチャの基盤部分の Terraform 等による定義を管理するリポジトリです。
 
+---
+
+目次
+
 - [文書に関するメタな情報](#文書に関するメタな情報)
   - [ドキュメント内の自由変数](#ドキュメント内の自由変数)
 - [当リポジトリが管理を担当するインフラストラクチャ](#当リポジトリが管理を担当するインフラストラクチャ)
+  - [keyless SSH について](#keyless-ssh-について)
+  - [前述の keyless SSH のセットアップのセキュリティについて](#前述の-keyless-ssh-のセットアップのセキュリティについて)
+  - [なぜ Short-lived certificate を利用しないのか？](#なぜ-short-lived-certificate-を利用しないのか)
+  - [SSHD へのアクセス制限](#SSHD-へのアクセス制限)
+- [cloud-init の処理内容と `establish tunnel` のステップについて](#cloud-init-の処理内容と-establish-tunnel-のステップについて)
+- [`ssh--admin.kory33.net` で繋がるマシンの正当性の根拠](#ssh--adminkory33net-で繋がるマシンの正当性の根拠)
+- [各種セットアップ手順](#各種セットアップ手順)
+
+---
 
 ## 文書に関するメタな情報
 
@@ -49,7 +62,7 @@ kory33.net には様々なサービスがホストされることが想定され
 
 `ssh--admin.kory33.net` への認証は完全に Cloudflare Access にオフロードし、インスタンス側ではユーザーの正当性を検証しないことにします。つまり、インスタンス上での `ubuntu` ユーザー (OCI Compute Instance 向け Ubuntu イメージでデフォルト生成される唯一の sudoer) のパスワードを削除し、 SSHD に空パスワードによる認証を受け付けさせ、**インスタンスの SSHD に到達できていることをユーザーの正当性の根拠とします**。
 
-#### セキュリティ
+#### 前述の keyless SSH のセットアップのセキュリティについて
 
 Cloudflare が提供する [short-lived certificate](https://developers.cloudflare.com/cloudflare-one/identity/users/short-lived-certificates) の機能は利用せず、`cloudflared access ssh --hostname ssh--admin.kory33.net` にてトンネルをローカルに張る瞬間に、 Cloudflare の認証基盤を利用してユーザーの正当性を検証します。
 short-lived certificate を利用しないことによるセキュリティ上不利な点として、
@@ -67,7 +80,7 @@ Short-lived certificate を利用せずにこのような設計を取ってい�
 
 一連の short-lived certificate による認証基盤は、原理的には Cloudflare Worker を利用して自前で再現できるものになっているはずですが、 JWT の発行、署名と CA 証明書管理を行うアプリケーションのソースコードが (2023/02/18 現在) 公開されていないため、自前構築を断念しています。一連の仕組みについての詳しい解説は [Public keys are not enough for SSH security - The Cloudflare Blog](https://blog.cloudflare.com/public-keys-are-not-enough-for-ssh-security/) を参照してください。
 
-#### 運用上の注意点
+#### SSHD へのアクセス制限
 
 上記で説明した設計により、`cloudflared` 以外の**一切の**プロセスからの `sshd` への接続を拒否する必要があります。
 
