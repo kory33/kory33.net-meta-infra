@@ -69,12 +69,15 @@ short-lived certificate を利用しないことによるセキュリティ上�
 
 - インスタンス内のユーザーにどの Principal がアクセスできるかの詳細な制御ができない
 - インスタンス側のログで、どの Principal が実際にアクセスしてきているかの情報が取れない
+- Cloudflare を通してアクセスされていることの確証が取れない
 
-の二点が挙げられます。しかしながら、当インフラストラクチャでは Principal が二つ (マシンユーザーである GitHub Actions と 管理者である [@kory33](https://github.com/kory33)) しか存在しないうえ、どちらの Principal も `ubuntu` ユーザー (OCI Compute Instance 上で生成される唯一の sudoer user) へのアクセスが許されているため、この二点はユーザー側で認証情報を管理しなければならないことの運用負荷と天秤に掛ければ、許容できるとの判断をしました。
+の三点が挙げられます。当インフラストラクチャでは Principal が二つ (マシンユーザーである GitHub Actions と 管理者である [@kory33](https://github.com/kory33)) しか存在しないうえ、どちらの Principal も `ubuntu` ユーザー (OCI Compute Instance 上で生成される唯一の sudoer user) へのアクセスが許されているため、最初の二点は、ユーザー側で認証情報を管理しなければならないことの運用負荷と天秤に掛け、許容できるとの判断をしました。
+
+三点目に関しては、`cloudflared` (を実行するユーザー) からのみ `SSHD` に繋がるようにインスタンスを設定することで対策を試みています。詳しくは [SSHD へのアクセス制限](#sshd-へのアクセス制限) にて説明します。
 
 #### なぜ Short-lived certificate を利用しないのか？
 
-Short-lived certificate を利用せずにこのような設計を取っている理由は、 2023/02/18 現在、`cloudflared` にマシンユーザーによる SSH ログインを行う時に Principal を指定できる機能 ([cloudflared#212](https://github.com/cloudflare/cloudflared/issues/212)) が実装されていないためです。この機能が無い限り、GitHub Actions ワークフローに、 GitHub Actions IdP が発行する OIDC Claim を根拠とする short-lived certificate を利用して SSH をさせる、ということが叶いません。
+Short-lived certificate を利用せずにこのような設計を取っている理由は、 2023/02/18 現在、`cloudflared` にマシンユーザーによる SSH ログインを行う時に Principal を指定できる機能 ([cloudflared#212](https://github.com/cloudflare/cloudflared/issues/212)) が実装されていないためです。この機能が無い限り、 GitHub Actions IdP が発行する OIDC Claim を根拠とする short-lived certificate を利用して GitHub Actions ワークフローに SSH をさせる、ということが叶いません。
 
 もし、署名付きの JWT に渡される Principal に OIDC Claim から得られた認証情報を結びつける機能が Cloudflare 側で実装されれば、その機能を利用した認証方法に切り替えるべきです。
 
