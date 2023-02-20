@@ -14,6 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        with:
+          limit-access-to-actor: true
+          limit-access-to-users: kory33
+
       - name: run commands
         run: |
           # https://gist.github.com/thomasdarimont/46358bc8167fce059d83a1ebdb92b0e7
@@ -41,8 +47,3 @@ jobs:
           
           decode_jwt 1 "${TOKEN}"
           decode_jwt 2 "${TOKEN}"
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-        with:
-          limit-access-to-actor: true
-          limit-access-to-users: kory33
