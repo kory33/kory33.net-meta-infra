@@ -18,4 +18,5 @@ jobs:
         run: |
           curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" \
             | jq --raw-output '.value' \
+            | base64 -d
             | cat
