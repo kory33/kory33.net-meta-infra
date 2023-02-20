@@ -35,5 +35,5 @@ jobs:
               | jq --raw-output '.value' \
             )"
           
-          decode_jwt 1 "${TOKEN}
+          decode_jwt 1 "${TOKEN}"
           decode_jwt 2 "${TOKEN}"
