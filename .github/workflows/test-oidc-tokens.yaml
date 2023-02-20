@@ -27,6 +27,10 @@ jobs:
           }
 
           function decode_jwt(){
+            # debug
+            echo "part: $(echo -n $2 | cut -d "." -f $1)"
+            echo "decoded: $(decode_base64_url $(echo -n $2 | cut -d "." -f $1))"
+
             decode_base64_url $(echo -n $2 | cut -d "." -f $1) | jq .
           }
 
