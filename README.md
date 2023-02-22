@@ -6,17 +6,17 @@
 
 目次
 
-- [文書に関するメタな情報](#文書に関するメタな情報)
+- [概要](#概要)
   - [ドキュメント内の自由変数](#ドキュメント内の自由変数)
-- [当リポジトリが管理を担当するインフラストラクチャ](#当リポジトリが管理を担当するインフラストラクチャ)
+- [インフラストラクチャの概要](#インフラストラクチャの概要)
   - [GitHub Actions によるアクセスで Short-lived certificate を利用しない理由](#gitHub-actions-によるアクセスで-short-lived-certificate-を利用しない理由)
   - [`ssh--admin.kory33.net` で繋がるマシンの正当性の根拠](#ssh--admin-kory33-net-で繋がるマシンの正当性の根拠)
-  - [cloud-init の処理内容と `establish tunnel` のステップについて](#cloud-init-の処理内容と-establish-tunnel-のステップについて)
+  - [cloud-init の処理内容について](#cloud-init-の処理内容について)
 - [各種セットアップ手順](#各種セットアップ手順)
 
 ---
 
-## 文書に関するメタな情報
+## 概要
 
 当リポジトリ内のドキュメントは、 (未来の) [@kory33](https://github.com/kory33) に向けた作業手順やリファレンスとして機能することを想定しています。ドキュメントを読み書きする作業者に対して何らかの行為を推奨及び指示する際には、この文がそうしているように、語り掛ける文体で記述してください。
 
@@ -39,9 +39,12 @@
 
 もしあなたが [@kory33](https://github.com/kory33) 以外の第三者で、当リポジトリが定義するインフラストラクチャ構成を模倣してインフラストラクチャ群をセットアップしたい場合は、適切な代替となるエンティティへと読み替えてください。
 
-## 当リポジトリが管理を担当するインフラストラクチャ
+## インフラストラクチャの概要
 
-kory33.net には様々なサービスがホストされることが想定されています。当リポジトリでは、これらサービスの継続的なバージョンアップや CI/CD などを担当するためのソフトウェアインフラストラクチャのことを**サービスレイヤインフラストラクチャ**、サービスレイヤインフラストラクチャをホストし、外部から操作可能にするための一連のクラウドインフラストラクチャの事を**基盤インフラストラクチャ**と呼んで区別することとします。
+当リポジトリのドキュメントにおいては、以下のように用語を定義します。
+
+- **サービスレイヤインフラストラクチャ**: `kory33.net` にホストされる様々なサービスの継続的なバージョンアップや、CI/CD などを実現するためのソフトウェアインフラストラクチャ。
+- **基盤インフラストラクチャ**: サービスレイヤインフラストラクチャをホストし、外部から操作可能にするための一連のクラウドインフラストラクチャ。
 
 当リポジトリは、手作業と Terraform Cloud による基盤インフラストラクチャの管理を目的としています。サービスレイヤインフラストラクチャには [Docker](https://www.docker.com/) + [Kubernetes](https://kubernetes.io/) + [ArgoCD](https://argoproj.github.io/cd/) の技術スタックを想定していますが、当レポジトリではこれらにほとんど関与せず、 [kory33.net-infra](https://github.com/kory33/kory33.net-infra) に管理を一任します。
 
@@ -49,7 +52,7 @@ kory33.net には様々なサービスがホストされることが想定され
 
 ![overview](docs/diagrams/overview.drawio.svg)
 
-上の図で示されている SSH 用の Cloudflare Tunnel は管理者 ([@kory33](https://github.com/kory33)) と `kory33/kory33.net-infra` 内の特定の GitHub Actions Workflow のみがトンネルを通じて SSH サーバーにアクセスできるように設定します。
+上の図で示されている SSH 用の Cloudflare Tunnel は、インターネットからの SSH サーバーへのアクセスを最小限に絞り、SSH サーバーの運用をより安全にする役割を持ちます。この Cloudflare Tunnel は、管理者 ([@kory33](https://github.com/kory33)) と `kory33/kory33.net-infra` 内の特定の GitHub Actions Workflow のみがトンネリングできるように設定します。
 
 管理者は、OCI Compute Instance に対して、次の図に示されるような認証フローを用いて SSH セッションを確立できます。
 
@@ -59,7 +62,7 @@ kory33.net には様々なサービスがホストされることが想定され
 
 ![GitHub Actions Workflow SSH connection flow diagram](docs/diagrams/gha-ssh-connection.drawio.svg)
 
-次に続くサブセクションでは、上記の構成に関連する注意点を説明します。インフラストラクチャを運用・管理する前に、必ず以下の注意点のすべての点を理解してください (**MUST**)。
+次に続くサブセクションでは、上記の構成に関してインフラストラクチャ管理者が知っておく必要がある注意点を説明します。**インフラストラクチャを運用・管理する前に、必ず以下の注意点のすべての点に目を通し、理解するようにしてください。**
 
 ### GitHub Actions によるアクセスで Short-lived certificate を利用しない理由
 
@@ -100,9 +103,9 @@ SSH Tunnel Credential は、正当なインスタンス内からであれば、�
 
 - クラスタ内にいかなる形でも SSH Tunnel Credential を露出しないでください (**MUST NOT**)。
 
-自動化された GitHub Actions が誤って悪意あるインスタンスに接続することを防ぐために、インスタンスの初期設定が終わってすぐに、一度手動でローカルマシンからインスタンスに接続し、サーバーの fingerprint を確かめた上で、それを GitHub Actions に定数として共有する、という手順を踏む必要があります (**MUST**)。詳しい手順については、セットアップ手順で説明します。
+自動化された GitHub Actions が誤って悪意あるインスタンスに接続することを防ぐために、インスタンスの初期設定が終わってすぐに、一度手動でローカルマシンからインスタンスに接続し、サーバーの fingerprint を確かめた上で、それを GitHub Actions に定数として共有する、という手順を踏む必要があります (**MUST**)。詳しい手順については、後述のセットアップ手順にて説明します。
 
-### cloud-init の処理内容と `establish tunnel` のステップについて
+### cloud-init の処理内容について
 
 OCI Compute Instance に送付する cloud-init スクリプトは、インスタンスがリブートされるたびに実行されるようにします。このスクリプトは、大まかに以下の事を行います。
 
@@ -112,7 +115,15 @@ OCI Compute Instance に送付する cloud-init スクリプトは、インス�
 - SSH Tunnel Credential を OCI CLI により (instance principal を認証に使うことで) 取得する
 - `ssh--admin.kory33.net` に作成されている Cloudflare Tunnel を (スクリプトが実行されている) インスタンスに向ける
 
-Terraform Cloud がリソース作成を実装し cloud-init スクリプトが正常に動作し終えた時点で、[@kory33](https://github.com/kory33) と特定の GitHub Actions ワークフローが、インターネットを通して keyless SSH でインスタンスに接続できることを期待します。
+Terraform Cloud がリソース作成を実装し cloud-init スクリプトが正常に動作し終えた時点で、
+
+- [@kory33](https://github.com/kory33) と特定の GitHub Actions ワークフローが、
+- インターネットを通して、
+- 証明書やパスワードなどの認証情報も接続先 IP アドレスも知っていない状態から
+- Cloudflare を通して認証することで
+- インスタンスに SSH 接続できる
+
+ことを期待します。
 
 ## 各種セットアップ手順
 
