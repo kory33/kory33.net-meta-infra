@@ -63,9 +63,14 @@ kory33.net には様々なサービスがホストされることが想定され
 
 ### GitHub Actions によるアクセスで Short-lived certificate を利用しない理由
 
-GitHub Actions によるアクセスにおいて Short-lived certificate を利用していない理由は、 2023/02/18 現在、`cloudflared ssh-gen` に特定の (認証情報に紐づいた) ユーザー名を指定できる機能 ([cloudflared#212](https://github.com/cloudflare/cloudflared/issues/212)) が実装されていないためです。この機能が無い限り、 GitHub Actions IdP が発行する JWT Claim を根拠とする short-lived certificate を利用して GitHub Actions ワークフローに SSH をさせる、ということが叶いません。
+GitHub Actions によるアクセスにおいて Short-lived certificate を利用していない理由は、 2023/02/18 現在、`cloudflared ssh-gen` に特定の (認証情報に紐づいた) ユーザー名を指定できる機能 ([cloudflared#212](https://github.com/cloudflare/cloudflared/issues/212)) が実装されていないためです。この機能が無い限り、 GitHub Actions IdP が発行する JWT Claim を根拠とする short-lived certificate を利用して GitHub Actions ワークフローに SSH をさせる、ということが叶いません。また、そもそも、Cloudflare Access への認証を JWT で行う機能が Cloudflare にネイティブ機能としては実装されていません (代わりに Worker を用いて特定のルールセットを検証することは可能です)。
 
-そのため、現状は [`salesforce/pam_oidc`](https://github.com/salesforce/pam_oidc) を SSH 先のインスタンスの SSHD に導入し、GitHub Actions IdP から得られる JWT をサーバー側で直接検証させるようにしています。
+そのため、現状は
+
+- Cloudflare Tunnel へのアクセスは [`tsndr/cloudflare-worker-jwt`](https://github.com/tsndr/cloudflare-worker-jwt) を利用した、 Cloudflare Workers にオフロードされた認証で、
+- SSH 先のインスタンスの SSHD へのアクセスは [`salesforce/pam_oidc`](https://github.com/salesforce/pam_oidc) を利用した、PAM (Pluggable Authentication Module) による認証で
+
+それぞれ GitHub Actions IdP から得られる JWT を検証させるようにしています。
 
 もし、署名付きの JWT に渡される Principal に OIDC Claim から得られた認証情報を結びつける機能が Cloudflare / `cloudflared` で実装されれば、認証フローの単純化のために、その機能を利用した認証方法に切り替えるべきです。
 
