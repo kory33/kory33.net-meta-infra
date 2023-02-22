@@ -9,12 +9,9 @@
 - [文書に関するメタな情報](#文書に関するメタな情報)
   - [ドキュメント内の自由変数](#ドキュメント内の自由変数)
 - [当リポジトリが管理を担当するインフラストラクチャ](#当リポジトリが管理を担当するインフラストラクチャ)
-  - [keyless SSH について](#keyless-ssh-について)
-  - [前述の keyless SSH のセットアップのセキュリティについて](#前述の-keyless-ssh-のセットアップのセキュリティについて)
-  - [なぜ Short-lived certificate を利用しないのか？](#なぜ-short-lived-certificate-を利用しないのか)
-  - [SSHD へのアクセス制限](#SSHD-へのアクセス制限)
-- [cloud-init の処理内容と `establish tunnel` のステップについて](#cloud-init-の処理内容と-establish-tunnel-のステップについて)
-- [`ssh--admin.kory33.net` で繋がるマシンの正当性の根拠](#ssh--adminkory33net-で繋がるマシンの正当性の根拠)
+  - [GitHub Actions によるアクセスで Short-lived certificate を利用しない理由](#gitHub-actions-によるアクセスで-short-lived-certificate-を利用しない理由)
+  - [`ssh--admin.kory33.net` で繋がるマシンの正当性の根拠](#ssh--admin-kory33-net-で繋がるマシンの正当性の根拠)
+  - [cloud-init の処理内容と `establish tunnel` のステップについて](#cloud-init-の処理内容と-establish-tunnel-のステップについて)
 - [各種セットアップ手順](#各種セットアップ手順)
 
 ---
