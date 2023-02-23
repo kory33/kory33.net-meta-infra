@@ -90,7 +90,7 @@ SSH Tunnel Credential は、正当なインスタンス内からであれば、�
 - OCI Compute Instance の Metadata API (`http://169.254.169.254/opc/v2/identity`) へアクセスして、インスタンス固有のクライアント証明書を取得する
 - このクライアント証明書を利用して OCI Vault へ認証し、 SSH Tunnel Credential を読み出す
 
-よって、cloud-init が `ubuntu` ユーザーによって cloudflared を設定する場面以外では Metadata API へのアクセスが発生することが**無い**と仮定する必要があります。この仮定を充足するため、次の事柄に注意してください。
+よって、cloud-init が `ubuntu` ユーザーによって cloudflared を設定する場面以外では Metadata API へのアクセスが発生することが**無い**と仮定する必要があります。この仮定を充足するため、次の制約を遵守してください。
 
 - `ubuntu` 以外のユーザーから `169.254.169.254` (metadata API) へのアクセスを `iptables` を用いて必ず遮断してください (**MUST**)
 - Kubernetes クラスタ内のすべてのプログラムを完全に信頼することは困難なため、 Kubernetes クラスタは必ず
@@ -103,7 +103,7 @@ SSH Tunnel Credential は、正当なインスタンス内からであれば、�
 
 - クラスタ内にいかなる形でも SSH Tunnel Credential を露出しないでください (**MUST NOT**)。
 
-自動化された GitHub Actions が誤って悪意あるインスタンスに接続することを防ぐために、インスタンスの初期設定が終わってすぐに、一度手動でローカルマシンからインスタンスに接続し、サーバーの fingerprint を確かめた上で、それを GitHub Actions に定数として共有する、という手順を踏む必要があります (**MUST**)。詳しい手順については、後述のセットアップ手順にて説明します。
+インスタンスの初期設定が終わってすぐに、一度手動でローカルマシンからインスタンスに接続し、サーバーの fingerprint を確かめた上で、それを GitHub Actions に定数として共有する、という手順を踏むことを強く推奨します (**SHOULD**)。これにより、自動化された GitHub Actions が誤って悪意あるインスタンスに接続することを防ぐことができます。
 
 ### cloud-init の処理内容について
 
