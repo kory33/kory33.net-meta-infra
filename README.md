@@ -12,7 +12,7 @@
   - [GitHub Actions によるアクセスで Short-lived certificate を利用しない理由](#gitHub-actions-によるアクセスで-short-lived-certificate-を利用しない理由)
   - [`ssh--admin.kory33.net` で繋がるマシンの正当性の根拠](#ssh--admin-kory33-net-で繋がるマシンの正当性の根拠)
   - [cloud-init の処理内容について](#cloud-init-の処理内容について)
-- [各種セットアップ手順](#各種セットアップ手順)
+- [セットアップ手順](#セットアップ手順)
 
 ---
 
@@ -125,9 +125,9 @@ Terraform Cloud がリソース作成を実装し cloud-init スクリプトが�
 
 ことを期待します。
 
-## 各種セットアップ手順
+## セットアップ手順
 
-次の手順に従うことで基盤インフラストラクチャ全体を立ち上げることができます。
+基盤インフラストラクチャ全体を立ち上げるには、次の手順に従ってください。
 
 - [ドメインと Cloudflare のセットアップ](./docs/bootstrapping/domain-and-cloudflare.md) に従って、ドメイン周りの設定を行う
 - [Terraform Cloud とそれに持たせる認証情報の用意](./docs/bootstrapping/credentials-to-terraform-cloud.md) に従って、Terraform Cloud に Cloudflare や Oracle Cloud Infrastructure への認証情報を持たせる
