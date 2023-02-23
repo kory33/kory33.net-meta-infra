@@ -136,7 +136,7 @@ Terraform Cloud 上で実行される Terraform が OCI (Oracle Cloud Infrastruc
   - **ターミナルを閉じずに**次の手順に進んでください。
   </details>
 
-- **生成した鍵のうち、公開鍵を OCI に API Signing Key として追加**し、**必要な情報を Terraform Cloud に共有します**。**[OCI Console](https://cloud.oracle.com/) 上で**次の手順を実行してください。
+- **生成した鍵のうち、公開鍵を OCI に API Signing Key として追加**し、**必要な情報を Terraform Cloud に共有**します。**[OCI Console](https://cloud.oracle.com/) 上で**次の手順を実行してください。
   <details>
     <summary>手順</summary>
 
@@ -159,7 +159,7 @@ Terraform Cloud 上で実行される Terraform が OCI (Oracle Cloud Infrastruc
     | `oci_region`                      | Config File Preview の `region=` 以降                                                          |
     | `oci_user_private_key`            | ローカルマシン上のターミナルで<br> `cat "${workdir}/oci_api_key.pem"` <br>して得られる出力結果 |
 
-    </details>
+  </details>
 
 - **先ほど生成した秘密鍵をローカルマシンから削除**します。次のコマンドを実行してください。
 
