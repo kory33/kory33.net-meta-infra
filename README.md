@@ -127,5 +127,10 @@ Terraform Cloud がリソース作成を実装し cloud-init スクリプトが�
 
 ## 各種セットアップ手順
 
-- [ドメインと Cloudflare Zone のセットアップ](./docs/bootstrapping/domain-and-cloudflare-zone.md)
-- [Oracle Cloud Infrastructure の Compute Instance セットアップ](./docs/bootstrapping/oci-compute-instances.md)
+次の手順に従うことで基盤インフラストラクチャ全体を立ち上げることができます。
+
+- [ドメインと Cloudflare のセットアップ](./docs/bootstrapping/domain-and-cloudflare.md) に従って、ドメイン周りの設定を行う
+- [Terraform Cloud とそれに持たせる認証情報の用意](./docs/bootstrapping/credentials-to-terraform-cloud.md) に従って、Terraform Cloud に Cloudflare や Oracle Cloud Infrastructure への認証情報を持たせる
+- Terraform Cloud 上で plan + apply を実行する
+
+サービスインフラストラクチャのセットアップは、サービスインフラストラクチャを管理している [kory33.net-infra](https://github.com/kory33/kory33.net-infra) を参照してください。
