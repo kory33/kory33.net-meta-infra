@@ -33,8 +33,29 @@ Terraform Cloud 上で実行される Terraform が Cloudflare へのリクエ�
   - [**Cloudflare** > **My Profile** > **API Token**](https://dash.cloudflare.com/profile/api-tokens) へ移動してください
   - **Create Token** を選択してください
   - **Create Custom Token > Get started** を選択してください。トークン設定画面が出るため、次の手順を実行してください。
-    - **Token name** に `Automation Token for Terraform to manage kory33.net resources` と入力してください
-    - (TODO)
+
+    - **Token name** に `Automation token for Terraform to manage kory33.net resources` と入力してください
+    - 次の権限を付与してください：
+
+      | スコープ | 権限名                     | 権限 |
+      | -------- | -------------------------- | ---- |
+      | Account  | Account: Apps and Policies | Edit |
+      | Account  | Cloudflare Tunnel          | Edit |
+      | Account  | Workers KV Storage         | Edit |
+      | Account  | Workers Scripts            | Edit |
+      | Zone     | Access: Apps and Policies  | Edit |
+      | Zone     | DNS                        | Edit |
+      | Zone     | SSL and Certificates       | Edit |
+      | Zone     | Workers Routes             | Edit |
+      | Zone     | Zone                       | Edit |
+
+    - **Account Resources** > **Include** > 自分の Cloudflare アカウント を追加してください
+    - **Zone Resources** > **Include** > **Specific zone** > **kory33.net** を追加してください
+
+  - トークンの設定をプレビューする画面が表示されます。次の画像と設定が一致していることを確認してください。
+    ![Cloudflare custom api token settings](./screenshots/cloudflare-custom-api-token-settings.png)
+
+  - **Create Token** してください。
   - トークンの生成を通知する画面が表示されます。この画面を閉じずに、次の手順に進んでください。
   </details>
 
