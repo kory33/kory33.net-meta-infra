@@ -21,6 +21,6 @@ locals {
 
 resource "cloudflare_worker_route" "my_route" {
   zone_id     = cloudflare_zone.main_zone.id
-  pattern     = locals.oci_machine_ssh_tunnel_authentication_eval_url
+  pattern     = local.oci_machine_ssh_tunnel_authentication_eval_url
   script_name = cloudflare_worker_script.oci_machine_ssh_tunnel_authentication.name
 }
