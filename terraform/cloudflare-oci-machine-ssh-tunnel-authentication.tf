@@ -11,7 +11,7 @@ resource "cloudflare_worker_script" "oci_machine_ssh_tunnel_authentication" {
   kv_namespace_binding {
     # The script expects the variable KV to refer to a cloudflare KV interface
     name         = "KV"
-    namespace_id = cloudflare_workers_kv_namespace.my_namespace.id
+    namespace_id = cloudflare_workers_kv_namespace.oci_machine_ssh_tunnel_authentication_kv.id
   }
 }
 

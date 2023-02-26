@@ -39,8 +39,8 @@ resource "cloudflare_access_policy" "main_zone_oci_machine_ssh" {
 
   include {
     external_evaluation {
-      evaluate_url = locals.oci_machine_ssh_tunnel_authentication_eval_url
-      keys_url     = "${locals.oci_machine_ssh_tunnel_authentication_eval_url}/keys"
+      evaluate_url = local.oci_machine_ssh_tunnel_authentication_eval_url
+      keys_url     = "${local.oci_machine_ssh_tunnel_authentication_eval_url}/keys"
     }
   }
 }
@@ -52,7 +52,7 @@ resource "random_password" "main_zone_oci_ssh_tunnel_secret" {
 resource "cloudflare_tunnel" "main_zone_oci_ssh" {
   account_id = cloudflare_zone.main_zone.account_id
   name       = "kory33-net-oci-ssh"
-  secret     = base64encode(random_password.admin_ssh_cloudflare_tunnel_secret.result)
+  secret     = base64encode(random_password.main_zone_oci_ssh_tunnel_secret.result)
 }
 
 resource "cloudflare_tunnel_config" "main_zone_oci_ssh" {
