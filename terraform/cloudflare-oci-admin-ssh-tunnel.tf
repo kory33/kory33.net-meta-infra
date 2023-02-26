@@ -1,5 +1,5 @@
 resource "cloudflare_access_application" "main_zone_oci_admin_ssh" {
-  zone_id          = cloudflare_zone.main_zone.id
+  zone_id          = data.cloudflare_zone.main_zone.id
   name             = "SSH to the OCI instance hosting ${local.main_zone} (for manual accesses by Administrators)"
   domain           = "oci--ssh--admin.${local.main_zone}"
   type             = "self_hosted"
@@ -23,7 +23,7 @@ resource "cloudflare_access_policy" "main_zone_oci_admin_ssh" {
 }
 
 resource "cloudflare_access_application" "main_zone_oci_machine_ssh" {
-  zone_id          = cloudflare_zone.main_zone.id
+  zone_id          = data.cloudflare_zone.main_zone.id
   name             = "SSH to the OCI instance hosting ${local.main_zone} (for machine accesses)"
   domain           = "oci--ssh--automation.${local.main_zone}"
   type             = "self_hosted"
@@ -50,13 +50,13 @@ resource "random_password" "main_zone_oci_ssh_tunnel_secret" {
 }
 
 resource "cloudflare_tunnel" "main_zone_oci_ssh" {
-  account_id = cloudflare_zone.main_zone.account_id
+  account_id = data.cloudflare_zone.main_zone.account_id
   name       = "kory33-net-oci-ssh"
   secret     = base64encode(random_password.main_zone_oci_ssh_tunnel_secret.result)
 }
 
 resource "cloudflare_tunnel_config" "main_zone_oci_ssh" {
-  account_id = cloudflare_zone.main_zone.account_id
+  account_id = data.cloudflare_zone.main_zone.account_id
   tunnel_id  = cloudflare_tunnel.main_zone_oci_ssh.id
 
   config {
