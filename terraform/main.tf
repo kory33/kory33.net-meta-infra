@@ -29,12 +29,6 @@ variable "cloudflare_api_token" {
   sensitive   = true
 }
 
-variable "cloudflare_account_id" {
-  description = "The ID of the account that is hosting the main zone"
-  type        = string
-  sensitive   = false
-}
-
 provider "cloudflare" {
   api_token = var.cloudflare_api_token
 }
