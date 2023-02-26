@@ -18,7 +18,7 @@ terraform {
     organization = "kory33"
 
     workspaces {
-      name = "seichi_infra"
+      name = "kory33-net-meta-infra"
     }
   }
 }
