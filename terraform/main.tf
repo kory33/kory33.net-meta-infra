@@ -6,7 +6,11 @@ terraform {
     }
     oci = {
       source  = "hashicorp/oci"
-      version = ">= 4.0.0"
+      version = "~> 4"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3"
     }
   }
 
@@ -23,6 +27,12 @@ variable "cloudflare_api_token" {
   description = "API token used for Cloudflare API authentication"
   type        = string
   sensitive   = true
+}
+
+variable "cloudflare_account_id" {
+  description = "The ID of the account that is hosting the main zone"
+  type        = string
+  sensitive   = false
 }
 
 provider "cloudflare" {
