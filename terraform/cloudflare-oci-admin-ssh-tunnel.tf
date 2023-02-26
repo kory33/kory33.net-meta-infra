@@ -59,17 +59,19 @@ resource "cloudflare_tunnel_config" "main_zone_oci_ssh" {
   account_id = cloudflare_zone.main_zone.account_id
   tunnel_id  = cloudflare_tunnel.main_zone_oci_ssh.id
 
-  ingress_rule {
-    hostname = "oci--ssh--admin.${local.main_zone}"
-    service  = "ssh://localhost:22"
-  }
+  config {
+    ingress_rule {
+      hostname = "oci--ssh--admin.${local.main_zone}"
+      service  = "ssh://localhost:22"
+    }
 
-  ingress_rule {
-    hostname = "oci--ssh--automation.${local.main_zone}"
-    service  = "ssh://localhost:22"
-  }
+    ingress_rule {
+      hostname = "oci--ssh--automation.${local.main_zone}"
+      service  = "ssh://localhost:22"
+    }
 
-  ingress_rule {
-    service = "http_status:404"
+    ingress_rule {
+      service = "http_status:404"
+    }
   }
 }
