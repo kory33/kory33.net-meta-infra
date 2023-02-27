@@ -10,7 +10,7 @@
   - [ドキュメント内の自由変数](#ドキュメント内の自由変数)
 - [インフラストラクチャの概要](#インフラストラクチャの概要)
   - [GitHub Actions によるアクセスで Short-lived certificate を利用しない理由](#gitHub-actions-によるアクセスで-short-lived-certificate-を利用しない理由)
-  - [`ssh--admin.kory33.net` で繋がるマシンの正当性の根拠](#ssh--admin-kory33-net-で繋がるマシンの正当性の根拠)
+  - [SSH トンネル先のマシンの正当性の根拠](#SSH-トンネル先のマシンの正当性の根拠)
   - [cloud-init の処理内容について](#cloud-init-の処理内容について)
 - [セットアップ手順](#セットアップ手順)
 
@@ -79,11 +79,11 @@ GitHub Actions によるアクセスにおいて Short-lived certificate を利�
 
 一連の short-lived certificate による認証基盤は、原理的には Cloudflare Worker を利用して自前で再現できるものになっているはずですが、 JWT の発行、署名と CA 証明書管理を行うアプリケーションのソースコードが (2023/02/18 現在) 公開されていないため、自前構築を断念しています。一連の仕組みについての詳しい解説は [Public keys are not enough for SSH security - The Cloudflare Blog](https://blog.cloudflare.com/public-keys-are-not-enough-for-ssh-security/) を参照してください。
 
-### `ssh--admin.kory33.net` で繋がるマシンの正当性の根拠
+### SSH トンネル先のマシンの正当性の根拠
 
 Terraform によって OCI Vault に共有される tunnel credential のことを、**SSH Tunnel Credential** と呼ぶことにします。
 
-`ssh--admin.kory33.net` が我々が作成したインスタンスであるという確証は、SSH Tunnel Credential が漏洩していないことに依存します。インスタンス内にホストされる Kubernetes クラスタ内のすべてのプログラムを完全に信頼することは困難なため、Kubernetes クラスタ内のプログラムが SSH Tunnel Credential にアクセスできないように十分な注意を払う必要があります。
+`oci--ssh--admin.kory33.net` / `oci--ssh--automation.kory33.net` が我々が作成したインスタンスであるという確証は、SSH Tunnel Credential が漏洩していないことに依存します。インスタンス内にホストされる Kubernetes クラスタ内のすべてのプログラムを完全に信頼することは困難なため、Kubernetes クラスタ内のプログラムが SSH Tunnel Credential にアクセスできないように十分な注意を払う必要があります。
 
 SSH Tunnel Credential は、正当なインスタンス内からであれば、次の手順で OCI Vault から読み取れます。
 
@@ -113,7 +113,7 @@ OCI Compute Instance に送付する cloud-init スクリプトは、インス�
 - SSHD に [`salesforce/pam_oidc`](https://github.com/salesforce/pam_oidc) を利用させるように設定し、`TrustedCACert` を OCI Vault に入っている CA Cert に向け、各種設定を行う
 - [`cloudflared`](https://github.com/cloudflare/cloudflared) の特定バージョンを (まだダウンロードされていなければ) ダウンロードする
 - SSH Tunnel Credential を OCI CLI により (instance principal を認証に使うことで) 取得する
-- `ssh--admin.kory33.net` に作成されている Cloudflare Tunnel を (スクリプトが実行されている) インスタンスに向ける
+- SSH 用の Cloudflare Tunnel を (スクリプトが実行されている) インスタンスに向ける
 
 Terraform Cloud がリソース作成を実装し cloud-init スクリプトが正常に動作し終えた時点で、
 
