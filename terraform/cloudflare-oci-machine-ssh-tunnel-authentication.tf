@@ -6,12 +6,17 @@ resource "cloudflare_workers_kv_namespace" "oci_machine_ssh_tunnel_authenticatio
 resource "cloudflare_worker_script" "oci_machine_ssh_tunnel_authentication" {
   account_id = data.cloudflare_zone.main_zone.account_id
   name       = "oci-machine-ssh-tunnel-authentication"
-  content    = "console.log(\"1\")"
+  content    = file("../oci-machine-ssh-tunnel-authentication/index.js")
 
   kv_namespace_binding {
     # The script expects the variable KV to refer to a cloudflare KV interface
     name         = "KV"
     namespace_id = cloudflare_workers_kv_namespace.oci_machine_ssh_tunnel_authentication_kv.id
+  }
+
+  plain_text_binding {
+    name = "DEBUG"
+    text = "truethy"
   }
 }
 
