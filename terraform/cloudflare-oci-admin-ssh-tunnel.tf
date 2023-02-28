@@ -1,7 +1,7 @@
 resource "cloudflare_access_application" "main_zone_oci_admin_ssh" {
   zone_id          = data.cloudflare_zone.main_zone.id
-  name             = "SSH to the OCI instance hosting ${local.main_zone} (for manual accesses by Administrators)"
-  domain           = "oci--ssh--admin.${local.main_zone}"
+  name             = "SSH to the OCI instance hosting ${local.cloudflare_main_zone} (for manual accesses by Administrators)"
+  domain           = "oci--ssh--admin.${local.cloudflare_main_zone}"
   type             = "self_hosted"
   session_duration = "24h"
 }
@@ -14,18 +14,18 @@ resource "cloudflare_access_policy" "main_zone_oci_admin_ssh" {
   decision       = "allow"
 
   include {
-    email = [local.kory33_email]
+    email = [local.cloudflare_user_email]
   }
 
   require {
-    email = [local.kory33_email]
+    email = [local.cloudflare_user_email]
   }
 }
 
 resource "cloudflare_access_application" "main_zone_oci_machine_ssh" {
   zone_id          = data.cloudflare_zone.main_zone.id
-  name             = "SSH to the OCI instance hosting ${local.main_zone} (for machine accesses)"
-  domain           = "oci--ssh--automation.${local.main_zone}"
+  name             = "SSH to the OCI instance hosting ${local.cloudflare_main_zone} (for machine accesses)"
+  domain           = "oci--ssh--automation.${local.cloudflare_main_zone}"
   type             = "self_hosted"
   session_duration = "24h"
 }
@@ -61,12 +61,12 @@ resource "cloudflare_tunnel_config" "main_zone_oci_ssh" {
 
   config {
     ingress_rule {
-      hostname = "oci--ssh--admin.${local.main_zone}"
+      hostname = "oci--ssh--admin.${local.cloudflare_main_zone}"
       service  = "ssh://localhost:22"
     }
 
     ingress_rule {
-      hostname = "oci--ssh--automation.${local.main_zone}"
+      hostname = "oci--ssh--automation.${local.cloudflare_main_zone}"
       service  = "ssh://localhost:22"
     }
 
@@ -78,8 +78,8 @@ resource "cloudflare_tunnel_config" "main_zone_oci_ssh" {
 
 resource "cloudflare_record" "main_zone_oci_ssh_tunnel_routes" {
   for_each = toset([
-    "oci--ssh--admin.${local.main_zone}",
-    "oci--ssh--automation.${local.main_zone}"
+    "oci--ssh--admin.${local.cloudflare_main_zone}",
+    "oci--ssh--automation.${local.cloudflare_main_zone}"
   ])
 
   zone_id = data.cloudflare_zone.main_zone.id

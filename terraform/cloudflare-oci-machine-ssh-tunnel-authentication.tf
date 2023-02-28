@@ -26,5 +26,5 @@ resource "cloudflare_worker_script" "oci_machine_ssh_tunnel_authentication" {
 }
 
 locals {
-  oci_machine_ssh_tunnel_authentication_eval_url = "https://${cloudflare_worker_script.oci_machine_ssh_tunnel_authentication.name}.${local.worker_subdomain}/*"
+  oci_machine_ssh_tunnel_authentication_eval_url = "https://${cloudflare_worker_script.oci_machine_ssh_tunnel_authentication.name}.${local.cloudflare_worker_subdomain}/*"
 }
