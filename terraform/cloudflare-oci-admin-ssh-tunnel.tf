@@ -50,13 +50,13 @@ resource "random_password" "cloudflare_main_zone_oci_ssh_tunnel_secret" {
 }
 
 resource "cloudflare_tunnel" "cloudflare_main_zone_oci_ssh" {
-  account_id = data.cloudflare_zone.cloudflare_main_zone.cloudflare_account_id
+  account_id = data.cloudflare_zone.cloudflare_main_zone.account_id
   name       = "kory33-net-oci-ssh"
   secret     = base64encode(random_password.cloudflare_main_zone_oci_ssh_tunnel_secret.result)
 }
 
 resource "cloudflare_tunnel_config" "cloudflare_main_zone_oci_ssh" {
-  account_id = data.cloudflare_zone.cloudflare_main_zone.cloudflare_account_id
+  account_id = data.cloudflare_zone.cloudflare_main_zone.account_id
   tunnel_id  = cloudflare_tunnel.cloudflare_main_zone_oci_ssh.id
 
   config {

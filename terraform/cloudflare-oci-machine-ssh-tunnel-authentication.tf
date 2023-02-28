@@ -1,10 +1,10 @@
 resource "cloudflare_workers_kv_namespace" "oci_machine_ssh_tunnel_authentication_kv" {
-  account_id = data.cloudflare_zone.cloudflare_main_zone.cloudflare_account_id
+  account_id = data.cloudflare_zone.cloudflare_main_zone.account_id
   title      = "oci-machine-ssh-tunnel-authentication-kv"
 }
 
 resource "cloudflare_worker_script" "oci_machine_ssh_tunnel_authentication" {
-  account_id = data.cloudflare_zone.cloudflare_main_zone.cloudflare_account_id
+  account_id = data.cloudflare_zone.cloudflare_main_zone.account_id
   name       = "oci-machine-ssh-tunnel-authentication"
   content    = file("../oci-machine-ssh-tunnel-authentication/index.js")
 
