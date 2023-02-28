@@ -14,7 +14,7 @@ resource "cloudflare_access_policy" "main_zone_oci_admin_ssh" {
   decision       = "allow"
 
   include {
-    email = [local.cloudflare_user_email]
+    everyone = true
   }
 
   require {
@@ -38,6 +38,10 @@ resource "cloudflare_access_policy" "main_zone_oci_machine_ssh" {
   decision       = "allow"
 
   include {
+    everyone = true
+  }
+
+  require {
     external_evaluation {
       evaluate_url = local.oci_machine_ssh_tunnel_authentication_eval_url
       keys_url     = "${local.oci_machine_ssh_tunnel_authentication_eval_url}/keys"
