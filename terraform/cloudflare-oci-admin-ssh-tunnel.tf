@@ -84,7 +84,7 @@ resource "cloudflare_record" "main_zone_oci_ssh_tunnel_routes" {
 
   zone_id = data.cloudflare_zone.main_zone.id
   name    = each.key
-  value   = "${cloudflare_argo_tunnel.main_zone_oci_ssh.id}.cfargotunnel.com"
+  value   = "${cloudflare_tunnel.main_zone_oci_ssh.id}.cfargotunnel.com"
   type    = "CNAME"
   proxied = true
 }
