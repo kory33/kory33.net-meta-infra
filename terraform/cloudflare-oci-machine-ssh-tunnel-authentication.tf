@@ -18,6 +18,11 @@ resource "cloudflare_worker_script" "oci_machine_ssh_tunnel_authentication" {
     name = "DEBUG"
     text = "truethy"
   }
+
+  plain_text_binding {
+    name = "TEAM_DOMAIN"
+    text = local.cloudflare_team_domain
+  }
 }
 
 locals {
