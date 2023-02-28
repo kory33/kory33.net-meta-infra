@@ -75,3 +75,16 @@ resource "cloudflare_tunnel_config" "main_zone_oci_ssh" {
     }
   }
 }
+
+resource "cloudflare_record" "main_zone_oci_ssh_tunnel_routes" {
+  for_each = toset([
+    "oci--ssh--admin.${local.main_zone}",
+    "oci--ssh--automation.${local.main_zone}"
+  ])
+
+  zone_id = data.cloudflare_zone.main_zone.id
+  name    = each.key
+  value   = "${cloudflare_argo_tunnel.main_zone_oci_ssh.id}.cfargotunnel.com"
+  type    = "CNAME"
+  proxied = true
+}
