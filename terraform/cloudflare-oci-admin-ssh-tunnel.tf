@@ -35,7 +35,7 @@ resource "cloudflare_access_policy" "main_zone_oci_machine_ssh" {
   zone_id        = cloudflare_access_application.main_zone_oci_machine_ssh.zone_id
   name           = "Allow authorized machines to SSH"
   precedence     = "1"
-  decision       = "allow"
+  decision       = "non_identity"
 
   include {
     everyone = true
