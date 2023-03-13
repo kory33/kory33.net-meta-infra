@@ -95,6 +95,20 @@ resource "cloudflare_worker_script" "cf_worker_as_openssh_ca__signer" {
 
 resource "cloudflare_worker_route" "cf_worker_as_openssh_ca__signer" {
   zone_id     = data.cloudflare_zone.main_zone.id
-  pattern     = "cf-worker-as-openssh-ca--signer.kory33.net/*"
+  pattern     = "cf-worker-as-openssh-ca--signer.${local.cloudflare_main_zone}/*"
   script_name = cloudflare_worker_script.cf_worker_as_openssh_ca__signer.name
+}
+
+# Add a proxied CNAME record that points to the top-level zone.
+#
+# When a request comes from the internet, the request goes through
+# Cloudflare's traffic sequence (since the CNAME record is proxied),
+# and it never goes past Workers (provided what we have bound cf-worker-as-openssh-ca's signer).
+# It therefore does not really matter what the domain this CNAME record points to.
+resource "cloudflare_record" "cf_worker_as_openssh_ca__signer" {
+  zone_id = data.cloudflare_zone.main_zone.id
+  name    = "cf-worker-as-openssh-ca--signer.${local.cloudflare_main_zone}"
+  value   = local.cloudflare_main_zone
+  type    = "CNAME"
+  proxied = true
 }
