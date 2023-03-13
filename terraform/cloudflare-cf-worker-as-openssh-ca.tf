@@ -53,8 +53,13 @@ resource "cloudflare_worker_script" "cf_worker_as_openssh_ca__authenticator" {
   }
 
   plain_text_binding {
-    name = "ETA_TEMPLATE_FOR_PRINCIPALS"
-    text = "<% if (true) %>authorized_by_cf_worker<% } %>"
+    name = "JWT_CLAIM_EXPECTATION_JSON"
+    text = "{}"
+  }
+
+  plain_text_binding {
+    name = "PRINCIPAL_NAME_TO_AUTHORIZE"
+    text = "authorized_by_cf_worker"
   }
 }
 
