@@ -99,7 +99,7 @@ resource "cloudflare_worker_route" "cf_worker_as_openssh_ca__signer" {
   script_name = cloudflare_worker_script.cf_worker_as_openssh_ca__signer.name
 }
 
-# Add a proxied CNAME record that points to the top-level zone.
+# Add a proxied CNAME record that points to a dummy domain.
 #
 # When a request comes from the internet, the request goes through
 # Cloudflare's traffic sequence (since the CNAME record is proxied),
@@ -108,7 +108,7 @@ resource "cloudflare_worker_route" "cf_worker_as_openssh_ca__signer" {
 resource "cloudflare_record" "cf_worker_as_openssh_ca__signer" {
   zone_id = data.cloudflare_zone.main_zone.id
   name    = "cf-worker-as-openssh-ca--signer.${local.cloudflare_main_zone}"
-  value   = local.cloudflare_main_zone
+  value   = "dummy-host.${local.cloudflare_main_zone}"
   type    = "CNAME"
   proxied = true
 }
