@@ -81,8 +81,9 @@ resource "cloudflare_worker_script" "cf_worker_as_openssh_ca__signer" {
 
   service_binding {
     # https://github.com/kory33/cf-worker-as-openssh-ca/blob/97825e04a4b6e1035f57f960e7ef811e74a6211c/signer/src/cloudflare/index.service.ts#L29
-    name    = "AUTHENTICATOR_SERVICE"
-    service = cloudflare_worker_script.cf_worker_as_openssh_ca__authenticator.name
+    environment = "production"
+    name        = "AUTHENTICATOR_SERVICE"
+    service     = cloudflare_worker_script.cf_worker_as_openssh_ca__authenticator.name
   }
 
   webassembly_binding {
