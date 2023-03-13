@@ -93,7 +93,7 @@ resource "cloudflare_worker_script" "cf_worker_as_openssh_ca__signer" {
 }
 
 resource "cloudflare_worker_route" "cf_worker_as_openssh_ca__signer" {
-  zone_id     = cloudflare_zone.main_zone.id
+  zone_id     = data.cloudflare_zone.main_zone.id
   pattern     = "cf-worker-as-openssh-ca--signer.kory33.net/*"
   script_name = cloudflare_worker_script.cf_worker_as_openssh_ca__signer.name
 }
