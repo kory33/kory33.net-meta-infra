@@ -60,7 +60,7 @@ resource "cloudflare_worker_script" "cf_worker_as_openssh_ca__authenticator" {
 
 resource "cloudflare_workers_kv_namespace" "cf_worker_as_openssh_ca__signer" {
   account_id = data.cloudflare_zone.main_zone.account_id
-  title      = "oci-machine-ssh-tunnel-authentication-kv"
+  title      = "cf-worker-as-openssh-ca-signer-kv"
 }
 
 resource "cloudflare_worker_script" "cf_worker_as_openssh_ca__signer" {
