@@ -6,6 +6,11 @@ resource "cloudflare_access_application" "main_zone_oci_admin_ssh" {
   session_duration = "24h"
 }
 
+resource "cloudflare_access_ca_certificate" "main_zone_oci_admin_ssh" {
+  account_id     = local.cloudflare_account_id
+  application_id = cloudflare_access_application.main_zone_oci_admin_ssh.id
+}
+
 resource "cloudflare_access_policy" "main_zone_oci_admin_ssh" {
   application_id = cloudflare_access_application.main_zone_oci_admin_ssh.id
   zone_id        = cloudflare_access_application.main_zone_oci_admin_ssh.zone_id
@@ -28,25 +33,6 @@ resource "cloudflare_access_application" "main_zone_oci_machine_ssh" {
   domain           = "oci--ssh--automation.${local.cloudflare_main_zone}"
   type             = "self_hosted"
   session_duration = "24h"
-}
-
-resource "cloudflare_access_policy" "main_zone_oci_machine_ssh" {
-  application_id = cloudflare_access_application.main_zone_oci_machine_ssh.id
-  zone_id        = cloudflare_access_application.main_zone_oci_machine_ssh.zone_id
-  name           = "Allow authorized machines to SSH"
-  precedence     = "1"
-  decision       = "non_identity"
-
-  include {
-    everyone = true
-  }
-
-  require {
-    external_evaluation {
-      evaluate_url = local.oci_machine_ssh_tunnel_authentication_eval_url
-      keys_url     = "${local.oci_machine_ssh_tunnel_authentication_eval_url}/keys"
-    }
-  }
 }
 
 resource "random_password" "main_zone_oci_ssh_tunnel_secret" {
