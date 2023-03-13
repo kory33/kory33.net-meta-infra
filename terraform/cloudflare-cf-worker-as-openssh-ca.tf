@@ -5,7 +5,7 @@ locals {
   cf_worker_as_openssh_ca__signer_script_url      = "${local.cf_worker_as_ca_release_base_url}/${local.cf_worker_as_openssh_ca__signer_tag}/index.service.js"
   cf_worker_as_openssh_ca__signer_wasm_base64_url = "${local.cf_worker_as_ca_release_base_url}/${local.cf_worker_as_openssh_ca__signer_tag}/signer_internal_crypto_bg.wasm-base64.txt"
 
-  cf_worker_as_openssh_ca__authenticator_tag        = "authenticator-remote-jwt-v0.1.1"
+  cf_worker_as_openssh_ca__authenticator_tag        = "authenticator-remote-jwt-v0.2.0"
   cf_worker_as_openssh_ca__authenticator_script_url = "${local.cf_worker_as_ca_release_base_url}/${local.cf_worker_as_openssh_ca__authenticator_tag}/index.service.js"
 }
 
