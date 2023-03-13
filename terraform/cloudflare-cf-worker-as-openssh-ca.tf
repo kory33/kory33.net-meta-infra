@@ -1,9 +1,9 @@
 locals {
   cf_worker_as_ca_release_base_url = "https://github.com/kory33/cf-worker-as-openssh-ca/releases/download"
 
-  cf_worker_as_openssh_ca__signer_tag        = "signer-v0.1.2"
-  cf_worker_as_openssh_ca__signer_script_url = "${local.cf_worker_as_ca_release_base_url}/${local.cf_worker_as_openssh_ca__signer_tag}/index.service.js"
-  cf_worker_as_openssh_ca__signer_wasm_url   = "${local.cf_worker_as_ca_release_base_url}/${local.cf_worker_as_openssh_ca__signer_tag}/signer_internal_crypto_bg.wasm"
+  cf_worker_as_openssh_ca__signer_tag             = "signer-v0.1.3"
+  cf_worker_as_openssh_ca__signer_script_url      = "${local.cf_worker_as_ca_release_base_url}/${local.cf_worker_as_openssh_ca__signer_tag}/index.service.js"
+  cf_worker_as_openssh_ca__signer_wasm_base64_url = "${local.cf_worker_as_ca_release_base_url}/${local.cf_worker_as_openssh_ca__signer_tag}/signer_internal_crypto_bg.wasm-base64.txt"
 
   cf_worker_as_openssh_ca__authenticator_tag        = "authenticator-remote-jwt-v0.1.0"
   cf_worker_as_openssh_ca__authenticator_script_url = "${local.cf_worker_as_ca_release_base_url}/${local.cf_worker_as_openssh_ca__authenticator_tag}/index.es6.js"
@@ -20,8 +20,8 @@ data "http" "cf_worker_as_openssh_ca__signer_script" {
   }
 }
 
-data "http" "cf_worker_as_openssh_ca__signer_wasm" {
-  url = local.cf_worker_as_openssh_ca__signer_wasm_url
+data "http" "cf_worker_as_openssh_ca__signer_wasm_base64" {
+  url = local.cf_worker_as_openssh_ca__signer_wasm_base64_url
 
   lifecycle {
     postcondition {
@@ -83,6 +83,6 @@ resource "cloudflare_worker_script" "cf_worker_as_openssh_ca__signer" {
   webassembly_binding {
     # https://github.com/kory33/cf-worker-as-openssh-ca/blob/97825e04a4b6e1035f57f960e7ef811e74a6211c/signer/src/cloudflare/index.service.ts#L44
     name   = "INTERNAL_CRYPTO_WASM_MODULE"
-    module = base64encode(data.http.cf_worker_as_openssh_ca__signer_wasm.response_body)
+    module = data.http.cf_worker_as_openssh_ca__signer_wasm_base64.response_body
   }
 }
