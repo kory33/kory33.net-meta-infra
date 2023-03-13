@@ -44,7 +44,7 @@ data "http" "cf_worker_as_openssh_ca__authenticator_script" {
 
 resource "cloudflare_worker_script" "cf_worker_as_openssh_ca__authenticator" {
   account_id = data.cloudflare_zone.main_zone.account_id
-  name       = "cf-worker-as-ca--authenticator"
+  name       = "cf-worker-as-openssh-ca--authenticator"
   content    = data.http.cf_worker_as_openssh_ca__authenticator_script.response_body
 
   plain_text_binding {
@@ -65,12 +65,12 @@ resource "cloudflare_worker_script" "cf_worker_as_openssh_ca__authenticator" {
 
 resource "cloudflare_workers_kv_namespace" "cf_worker_as_openssh_ca__signer" {
   account_id = data.cloudflare_zone.main_zone.account_id
-  title      = "cf-worker-as-openssh-ca-signer-kv"
+  title      = "cf-worker-as-openssh-ca--signer-kv"
 }
 
 resource "cloudflare_worker_script" "cf_worker_as_openssh_ca__signer" {
   account_id = data.cloudflare_zone.main_zone.account_id
-  name       = "cf-worker-as-ca--signer"
+  name       = "cf-worker-as-openssh-ca--signer"
   content    = data.http.cf_worker_as_openssh_ca__signer_script.response_body
 
   kv_namespace_binding {
