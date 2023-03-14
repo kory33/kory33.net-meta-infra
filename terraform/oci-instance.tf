@@ -18,8 +18,8 @@ data "oci_core_images" "canonical_ubuntu_22_04_on_A1_Flex" {
 
   lifecycle {
     postcondition {
-      condition     = length(self.images) == 1
-      error_message = "More than one images found: ${self.images}"
+      condition     = false
+      error_message = self
     }
   }
 }
