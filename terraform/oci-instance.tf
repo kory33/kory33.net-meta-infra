@@ -18,7 +18,7 @@ data "oci_core_images" "canonical_ubuntu_22_04_on_A1_Flex" {
 
   lifecycle {
     postcondition {
-      condition     = self.images == null
+      condition     = self.images != null
       error_message = jsonencode(self)
     }
   }
