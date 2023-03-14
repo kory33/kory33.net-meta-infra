@@ -31,5 +31,5 @@ data "oci_identity_availability_domains" "all" {
 }
 
 locals {
-  first_availability_domain = data.oci_identity_availability_domains.all[0]
+  first_availability_domain = data.oci_identity_availability_domains.all.availability_domains[0]
 }
