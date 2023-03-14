@@ -10,7 +10,7 @@ resource "oci_core_subnet" "private_subnet" {
   prohibit_public_ip_on_vnic = true
 }
 
-data "oci_core_images" "test_images" {
+data "oci_core_images" "canonical_ubuntu_22_04_on_A1_Flex" {
   compartment_id           = local.terraform_managed_compartment.id
   operating_system         = "Canonical Ubuntu"
   operating_system_version = "22.04"
@@ -49,6 +49,6 @@ resource "oci_core_instance" "main_instance" {
     boot_volume_size_in_gbs = 150
 
     source_type = "image"
-    source_id   = data.oci_core_images.test_images[0].id
+    source_id   = data.oci_core_images.canonical_ubuntu_22_04_on_A1_Flex.images[0].id
   }
 }
