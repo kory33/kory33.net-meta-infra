@@ -46,11 +46,6 @@ resource "oci_core_instance" "main_instance" {
     are_legacy_imds_endpoints_disabled = true
   }
 
-  launch_options {
-    boot_volume_type        = "ISCSI"
-    remote_data_volume_type = "ISCSI"
-  }
-
   source_details {
     boot_volume_size_in_gbs = 150
 
