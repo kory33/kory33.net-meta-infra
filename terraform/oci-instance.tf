@@ -32,6 +32,11 @@ resource "oci_core_instance" "main_instance" {
   availability_domain = local.first_availability_domain.name
   shape               = "VM.Standard.A1.Flex"
 
+  shape_config {
+    ocpus         = 4
+    memory_in_gbs = 24
+  }
+
   create_vnic_details {
     assign_public_ip = false
     subnet_id        = oci_core_subnet.private_subnet.id
