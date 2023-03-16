@@ -84,7 +84,7 @@ Terraform Cloud 上で実行される Terraform が OCI (Oracle Cloud Infrastruc
         <summary>次の手順を実行してください。</summary>
 
     - [Console 上の Compartment 管理画面](https://cloud.oracle.com/identity/compartments) に移動してください
-    - **Create Component** を選択してください
+    - **Create Compartment** を選択してください
     - **Name** に `kory33-net-infra` を、 **Description** に `Infrastructure required to run kory33.net services` を入力してください
     - 必要に応じて **Parent Compartment** を選択してください。デフォルト (root compartment) でも構いません。
     - **Create Compartment** してください
@@ -109,6 +109,7 @@ Terraform Cloud 上で実行される Terraform が OCI (Oracle Cloud Infrastruc
     - **Create Group** を選択してください
     - **Name** に `kory33-net-infra-automations` を、Description に `Machine accounts managing kory33.net inrastructures` を入力してください
     - **Create** してください
+    - **Add User to Group** から、 `kory33-net-infra-automation` を Group に追加してください
     </details>
 
   - **Policy を作成**します。
@@ -117,15 +118,16 @@ Terraform Cloud 上で実行される Terraform が OCI (Oracle Cloud Infrastruc
 
     - [Console 上の Policy 管理画面](https://cloud.oracle.com/identity/policies) に移動してください
     - **Create Policy** を選択してください
-    - **Name** に `kory33-net-automation` を、**Description** に `Allow automations to manage certain resources in the designated compartment` を入力してください
+    - **Name** に `kory33-net-infra-automations` を、**Description** に `Allow automations to manage certain resources in the designated compartment` を入力してください
     - **Compartment** は (root) コンパートメントを選択してください
     - **Policy Builder** の **Show manual editor を有効化**し、以下のポリシー定義を貼り付けてください。
 
       ```
-      ALLOW GROUP kory33-net-automations TO MANAGE instances IN COMPARTMENT kory33-net-infra
-      ALLOW GROUP kory33-net-automations TO MANAGE virtual-network-family IN COMPARTMENT kory33-net-infra
-      ALLOW GROUP kory33-net-automations TO MANAGE volume-family IN COMPARTMENT kory33-net-infra
-      ALLOW GROUP kory33-net-automations TO MANAGE vaults IN COMPARTMENT kory33-net-infra
+      ALLOW GROUP kory33-net-infra-automations TO MANAGE instances IN COMPARTMENT kory33-net-infra
+      ALLOW GROUP kory33-net-infra-automations TO INSPECT instance-images IN COMPARTMENT kory33-net-infra
+      ALLOW GROUP kory33-net-infra-automations TO MANAGE virtual-network-family IN COMPARTMENT kory33-net-infra
+      ALLOW GROUP kory33-net-infra-automations TO MANAGE volume-family IN COMPARTMENT kory33-net-infra
+      ALLOW GROUP kory33-net-infra-automations TO MANAGE vaults IN COMPARTMENT kory33-net-infra
       ```
 
     - **Create** してください
