@@ -11,10 +11,11 @@ resource "oci_core_subnet" "private_subnet" {
 }
 
 data "oci_core_images" "canonical_ubuntu_22_04_on_A1_Flex" {
-  compartment_id           = local.terraform_managed_compartment.id
-  operating_system         = "Canonical Ubuntu"
-  operating_system_version = "22.04 Minimal aarch64"
-  shape                    = "VM.Standard.A1.Flex"
+  compartment_id = local.terraform_managed_compartment.id
+
+  # See https://docs.oracle.com/en-us/iaas/images/ubuntu-2204/ for available versions
+  display_name = "Canonical-Ubuntu-22.04-Minimal-aarch64-2023.02.14-0"
+  shape        = "VM.Standard.A1.Flex"
 
   lifecycle {
     postcondition {
